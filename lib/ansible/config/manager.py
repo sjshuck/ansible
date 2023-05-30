@@ -44,6 +44,14 @@ def _get_entry(plugin_type, plugin_name, config):
     return entry
 
 
+def _comma_sep(s):
+    ''' split by comma, strip each, and filter out empty '''
+    for item in s.split(','):
+        item = item.strip()
+        if item:
+            yield item
+
+
 # FIXME: see if we can unify in module_utils with similar function used by argspec
 def ensure_type(value, value_type, origin=None):
     ''' return a configuration variable with casting
@@ -91,7 +99,7 @@ def ensure_type(value, value_type, origin=None):
 
         elif value_type == 'list':
             if isinstance(value, string_types):
-                value = [unquote(x.strip()) for x in value.split(',')]
+                value = [unquote(x) for x in _comma_sep(value)]
             elif not isinstance(value, Sequence):
                 errmsg = 'list'
 
@@ -130,7 +138,7 @@ def ensure_type(value, value_type, origin=None):
 
         elif value_type == 'pathlist':
             if isinstance(value, string_types):
-                value = [x.strip() for x in value.split(',')]
+                value = list(_comma_sep(value))
 
             if isinstance(value, Sequence):
                 value = [resolve_path(x, basedir=basedir) for x in value]
